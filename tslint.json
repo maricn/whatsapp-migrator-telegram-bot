@@ -1,0 +1,57 @@
+{
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "jsRules": {
+    "no-unused-expression": true
+  },
+  "rules": {
+    "arrow-parens": false,
+    "array-type": false,
+    "curly": [true, "ignore-same-line"],
+    "eofline": true,
+    "indent": [true, "spaces", 2],
+    "interface-name": false,
+    "max-classes-per-file": false,
+    "max-line-length": [true, 120],
+    "member-access": false,
+    "member-ordering": [
+      true,
+      {
+        "order": [
+          "public-static-field",
+          "public-static-method",
+          "protected-static-field",
+          "protected-static-method",
+          "private-static-field",
+          "private-static-method",
+          "public-instance-field",
+          "protected-instance-field",
+          "private-instance-field",
+          "public-constructor",
+          "protected-constructor",
+          "private-constructor",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method"
+        ]
+      }
+    ],
+    "no-empty": false,
+    "no-empty-interface": false,
+    "no-unused-expression": true,
+    "object-literal-sort-keys": false,
+    "one-line": true,
+    "one-variable-per-declaration": true,
+    "ordered-imports": true,
+    "quotemark": [true, "single", "avoid-escape"],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-snake-case",
+      "allow-pascal-case",
+      "allow-leading-underscore"
+    ]
+  },
+  "rulesDirectory": []
+}

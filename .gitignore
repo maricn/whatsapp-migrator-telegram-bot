@@ -1,0 +1,9 @@
+# NodeJS
+node_modules/
+
+# WhatsApp exports/imports
+imports/*/
+*.zip
+*.opus
+*.jpg
+*.txt
