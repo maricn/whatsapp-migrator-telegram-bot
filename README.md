@@ -28,8 +28,12 @@ There's few of them but I couldn't find one that:
 * upload all audio and video files to the group
 * is open source (FLOSS)
 
-Most notable mentions:
+## Credits
+
+Different similar solutions:
 * WhatsApp Chats Importer - [@whatsapp_chat_migrator_bot](https://t.me/whatsapp_chat_migrator_bot) (not open source?)
 * [TLImporter](https://github.com/TelegramTools/TLImporter)
 * [wat-bridge](https://github.com/rmed/wat-bridge)
+
+Used in this bot:
 * [puregram](https://github.com/nitreojs/puregram/) - used under the hood to work with Telegram API
