@@ -5,7 +5,6 @@ Telegram bot for migrating your existing WhatsApp group chats. Looking for maint
 ## How
 
 1. **EXPORT ARCHIVE** - Go to your WhatsApp chat, menu (three dots), more, "Export Chat" and save the zip file on your phone.
-  a. _Option is not available in Germany, however it might be that one of the chat members can access this option._
 2. **START CHAT** - Open Telegram and start a new chat or navigate to your destination chat.
 3. **ADD BOT** - Add our bot to the chat - [@whatsapp_migrator_bot](https://t.me/whatsapp_migrator_bot).
 4. **UPLOAD ARCHIVE** - Reply to the bot's message with your exported zip file.
@@ -13,7 +12,11 @@ Telegram bot for migrating your existing WhatsApp group chats. Looking for maint
   a. _Best to have all users added to the group and turn off their notifications as there will be a storm of messages._
 6. **IMPORT** - Start the import process.
 
-_Import is deliberately slow (~1000 messages per hour) so the bots don't get rate limited for posting too many messages._
+### Caveats
+* _Exporting chats is not available in Germany since early 2020.
+  * However, maybe one of the chat members can access this option and send you the archive.
+  * Or you can fallback [to decrypting WA sqlite db (ROOT only)](https://medium.com/@lakinduakash/decrypt-whatsapp-messages-3cc6da574836)._
+* _Import is deliberately slow (~1000 messages per hour) so the bots don't get rate limited for posting too many messages._
 
 ## Why
 
