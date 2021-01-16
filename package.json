@@ -1,0 +1,35 @@
+{
+  "name": "me.maricn.whatsapp-migrator",
+  "version": "0.1.0",
+  "description": "import chat to telegram",
+  "dependencies": {
+    "markdown-escape": "^1.1.0",
+    "puregram": "^2.0.4-rc.2",
+    "telegram-format": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.21",
+    "rimraf": "^3.0.2",
+    "ts-node": "^7.0.1",
+    "tsconfig-paths": "^3.5.0",
+    "tslint": "5.12.1",
+    "tslint-config-prettier": "^1.18.0",
+    "prettier": "^1.16.4",
+    "typescript": "^3.9.7"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "start": "ts-node -r tsconfig-paths/register src/main.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maricn/whatsapp-migrator-telegram-bot.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/maricn/whatsapp-migrator-telegram-bot/issues"
+  },
+  "homepage": "https://github.com/maricn/whatsapp-migrator-telegram-bot#readme"
+}
