@@ -1,9 +1,8 @@
 const fs = require('fs');
-import { Telegram } from 'puregram';
-import { TelegramUser } from 'puregram/lib/interfaces';
-import { markdownv2 as format } from 'telegram-format';
-import { TelegramMessage } from './TelegramMessage';
-import { WhatsAppLine } from './WhatsAppLine';
+import { EventQueue, QueuedEvent } from 'ts-events';
+import { ChatMessage } from '../chat-message';
+import { ChatMessageTransformer } from '../telegram/chat-message-transformer';
+import { WhatsAppLine } from './whatsapp-chat-line';
 
 function sleep(ms: number) {
   return new Promise(resolve => {
@@ -43,48 +42,48 @@ export class WhatsAppProcessor {
   private chatDirectory: string;
   private chatFile: string;
   private chatLines: string;
-  private chatId: string;
+  private queuedEvent: QueuedEvent<Partial<ChatMessage>>;
 
-  constructor(chatDirectory: string, chatFilename: string, chat_id: string) {
+  constructor(
+    chatDirectory: string,
+    chatFilename: string,
+    chatMessageQueue: EventQueue,
+    chatListener: ChatMessageTransformer,
+    // queuedEvent: QueuedEvent<Partial<ChatMessage>>,
+  ) {
     this.chatDirectory = chatDirectory;
     this.chatFile = chatDirectory + chatFilename;
-    this.chatId = chat_id;
     this.chatLines = fs.readFileSync(this.chatFile, {
       encoding: 'utf8',
     });
+    this.queuedEvent = new QueuedEvent<ChatMessage>({ queue: chatMessageQueue });
+    this.queuedEvent.attach(chatListener.transform.bind(chatListener));
   }
 
-  async process(userMap: { [user: string]: Partial<TelegramUser> }) {
+  async process() {
     const lines = this.chatLines.split('\u000d\u000a');
     console.log('chat lines: ' + lines.length);
-    await this.processLines(lines, userMap);
+    await this.processLines(lines);
   }
 
-  private async processLines(
-    lines: string[],
-    userMap: { [user: string]: Partial<TelegramUser> },
-    resumeFrom?: number,
-  ) {
-    // set up bot token in environment variables
-    const t: Telegram = new Telegram({
-      token: process.env.TOKEN,
-    });
-
+  private async processLines(lines: string[], resumeFrom?: number) {
     // t.updates.on('message', menu.onMessage);
     // t.updates.startPolling().catch(console.error);
-    //
+
     let lineStart = 0;
     let lineEnd = lineStart;
-    for (lineStart = resumeFrom; lineStart < lines.length; lineStart = lineEnd + 1) {
+    for (lineStart = resumeFrom || 0; lineStart < lines.length; lineStart = lineEnd + 1) {
       const lineRaw = lines[lineStart];
       lineEnd = lineStart;
 
+      // find a pattern that matches the raw line
       const matchingRegex = this.regexes.find(r => r.re.test(lineRaw));
       if (!matchingRegex || matchingRegex.id === 'unknown') {
         console.error(`No matching regex for line: [${lineRaw}].`);
         continue;
       }
 
+      // handle end of chat line
       if (matchingRegex.id === 'chatEnd') {
         if (lineStart < lines.length - 1) {
           console.error(`Empty line in the middle of the chat?`);
@@ -92,78 +91,25 @@ export class WhatsAppProcessor {
         } else break;
       }
 
-      console.log(`MATCH: ${matchingRegex.id}`);
-      console.log(`LINE: ${lineRaw}`);
-
+      // extract information from the raw chat line
       const matchFields = lineRaw.match(matchingRegex.re);
       const line: WhatsAppLine = Object.assign(new WhatsAppLine(), matchFields.groups);
 
       // clean up case when ` <Anhang:` gets captured into user's name
       const username = line.user?.split(':')[0];
-      const markdownMention = userMap[username]?.id
-        ? format.userMention(username, userMap[username].id)
-        : username;
 
-      const tgMessage: TelegramMessage = {
-        timestamp: format.monospace(line.getTimestampISO8601()),
-        mention: markdownMention,
-        text: (line.text && format.escape(line.text)) || null,
+      const chatMessage: ChatMessage = {
+        type: matchingRegex.id,
+        timestamp: new Date(line.getTimestampISO8601()),
+        username,
+        text: line.text,
+        attachment: /^upload(Audio|Photo)$/.test(matchingRegex.id)
+          ? fs.readFileSync(`${this.chatDirectory + line.filename}.${line.filetype}`)
+          : null,
       };
 
-      switch (matchingRegex.id) {
-        case 'text':
-          // @TODO: maricn - uncomment
-          break;
-          await t.api.sendMessage({
-            chat_id: this.chatId,
-            text: `${tgMessage.mention}: ${tgMessage.text}\n${tgMessage.timestamp}`,
-            parse_mode: 'MarkdownV2',
-            disable_notification: true,
-          });
-          break;
-
-        case 'uploadAudio':
-          const audioBuffer = fs.readFileSync(
-            `${this.chatDirectory + line.filename}.${line.filetype}`,
-          );
-          // @TODO: maricn - uncomment
-          break;
-          await t.api.sendAudio({
-            chat_id: this.chatId,
-            audio: audioBuffer,
-            parse_mode: 'MarkdownV2',
-            caption: `${tgMessage.mention} [${tgMessage.timestamp}]`,
-          });
-          break;
-
-        case 'uploadPhoto':
-          const photoBuffer = fs.readFileSync(
-            `${this.chatDirectory + line.filename}.${line.filetype}`,
-          );
-          // @TODO: maricn - uncomment
-          break;
-          await t.api.sendPhoto({
-            chat_id: this.chatId,
-            photo: photoBuffer,
-            parse_mode: 'MarkdownV2',
-            caption: `${tgMessage.mention} [${tgMessage.timestamp}]`,
-          });
-          break;
-
-        case 'uploadDocument':
-          break;
-
-        case 'exporterAnnouncement':
-        case 'announcement':
-          console.log(`ANNOUNCEMENT`);
-          break;
-
-        case 'unknown':
-        default:
-          console.log(`Unrecognized line: [${lineRaw}]`);
-          break;
-      }
-
+      this.queuedEvent.post(chatMessage);
+      this.queuedEvent.options.queue?.flush();
       continue;
 
       // make sure we don't get throttled

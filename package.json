@@ -5,7 +5,8 @@
   "dependencies": {
     "markdown-escape": "^1.1.0",
     "puregram": "^2.0.4-rc.2",
-    "telegram-format": "^2.0.1"
+    "telegram-format": "^2.0.1",
+    "ts-events": "^3.4.0"
   },
   "devDependencies": {
     "@types/node": "^14.14.21",
